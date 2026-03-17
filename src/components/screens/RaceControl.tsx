@@ -228,11 +228,15 @@ export default function RaceControl({
         </div>
       </div>
 
-      {/* Main race grid — single column on mobile, 3-column on large screens */}
-      <div className="flex-1 p-3 grid gap-3 grid-cols-1 lg:grid-cols-[280px_1fr_260px]">
+      {/* Main layout:
+            Mobile  → single column, DOM order (DriverCard, Actions, TimingTower, Weather/Events)
+            Desktop → 3-col grid with explicit placement:
+                      col1=TimingTower(row1-2), col2 row1=DriverCard, col2 row2=Weather+Events, col3=Actions(row1-2)
+      */}
+      <div className="flex-1 p-3 grid gap-3 grid-cols-1 lg:grid-cols-[280px_1fr_260px] lg:grid-rows-[auto_1fr]">
 
-        {/* Driver card — first on mobile */}
-        <div className="order-1 lg:order-2">
+        {/* Driver card — mobile: 1st; desktop: col 2 row 1 */}
+        <div className="lg:col-start-2 lg:row-start-1">
           <DriverCard
             playerState={playerState}
             raceState={raceState}
@@ -240,8 +244,8 @@ export default function RaceControl({
           />
         </div>
 
-        {/* Right column: tabbed panel — second on mobile */}
-        <div className="order-2 lg:order-3 lg:row-span-2 flex flex-col gap-3">
+        {/* Tabbed panel (actions/strategy/deg) — mobile: 2nd; desktop: col 3 rows 1-2 */}
+        <div className="lg:col-start-3 lg:row-start-1 lg:row-span-2 flex flex-col gap-3">
           <div className="flex gap-1">
             {(['actions', 'strategy', 'degradation'] as const).map(tab => (
               <button
@@ -274,8 +278,8 @@ export default function RaceControl({
           )}
         </div>
 
-        {/* Timing Tower — third on mobile, left column on desktop */}
-        <div className="order-3 lg:order-1 lg:row-span-2">
+        {/* Timing Tower — mobile: 3rd; desktop: col 1 rows 1-2 */}
+        <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2">
           <TimingTower
             drivers={raceState.drivers}
             playerDriverId={raceState.playerDriverId}
@@ -285,8 +289,8 @@ export default function RaceControl({
           />
         </div>
 
-        {/* Event log + weather — last on mobile, center bottom on desktop */}
-        <div className="order-4 lg:order-4 flex flex-col gap-3">
+        {/* Weather + event log — mobile: 4th; desktop: col 2 row 2 */}
+        <div className="lg:col-start-2 lg:row-start-2 flex flex-col gap-3">
           <WeatherPanel
             weather={raceState.weather}
             weatherState={weatherState}
