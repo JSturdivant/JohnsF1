@@ -1,8 +1,8 @@
 'use client';
 import React, { useState } from 'react';
-import { PlayerAction, TireCompound, RaceState, WeatherCondition } from '@/types';
-import { getCompoundColor, getCompoundLetter } from '@/simulation/tireModel';
+import { PlayerAction, TireCompound, RaceState } from '@/types';
 import { UnderOvercutAnalysis } from '@/types';
+import PitStopDialog from './PitStopDialog';
 
 interface ActionButtonsProps {
   raceState: RaceState;
@@ -10,8 +10,6 @@ interface ActionButtonsProps {
   onAction: (action: PlayerAction, compound?: TireCompound) => void;
   disabled: boolean;
 }
-
-const COMPOUNDS: TireCompound[] = ['SOFT', 'MEDIUM', 'HARD', 'INTER', 'WET'];
 
 function ActionBtn({
   label,
@@ -55,69 +53,56 @@ export default function ActionButtons({
   onAction,
   disabled,
 }: ActionButtonsProps) {
-  const [selectedCompound, setSelectedCompound] = useState<TireCompound>('MEDIUM');
-  const [showCompoundPicker, setShowCompoundPicker] = useState(false);
+  const [showPitDialog, setShowPitDialog] = useState(false);
+  const [pendingPitAction, setPendingPitAction] = useState<PlayerAction>('pit_now');
 
   const player = raceState.drivers.find(d => d.driver.id === raceState.playerDriverId);
   const weather = raceState.weather;
   const scActive = raceState.safetyCarStatus === 'sc' || raceState.safetyCarStatus === 'vsc';
   const isWet = weather === 'wet' || weather === 'very_wet' || weather === 'damp';
 
-  const handlePit = (action: PlayerAction) => {
-    onAction(action, selectedCompound);
-    setShowCompoundPicker(false);
+  const openPitDialog = (action: PlayerAction) => {
+    setPendingPitAction(action);
+    setShowPitDialog(true);
+  };
+
+  const handleConfirmPit = (compound: TireCompound) => {
+    onAction(pendingPitAction, compound);
+    setShowPitDialog(false);
+  };
+
+  const handleStayOut = () => {
+    onAction('stay_out');
+    setShowPitDialog(false);
   };
 
   const currentMode = player?.currentPaceMode ?? 'normal';
 
   return (
+    <>
+      {showPitDialog && player && (
+        <PitStopDialog
+          currentTire={player.tire}
+          lastLapTime={player.lapTime}
+          gapToLeader={player.gapToLeader}
+          gapToAhead={player.gapToAhead}
+          weather={weather}
+          onConfirmPit={handleConfirmPit}
+          onStayOut={handleStayOut}
+        />
+      )}
     <div className="f1-panel flex flex-col">
       <div className="f1-panel-header">Race Actions</div>
       <div className="p-3 flex flex-col gap-3">
-        {/* Compound selector */}
-        <div>
-          <div className="text-xs text-f1-muted mb-1.5 uppercase tracking-wider">
-            Select Compound (for pit stop)
-          </div>
-          <div className="flex gap-1.5">
-            {COMPOUNDS.map(c => (
-              <button
-                key={c}
-                onClick={() => setSelectedCompound(c)}
-                className={`tire-dot text-white font-bold transition-all ${
-                  selectedCompound === c ? 'ring-2 ring-white scale-110' : 'opacity-60 hover:opacity-100'
-                }`}
-                style={{
-                  background: getCompoundColor(c),
-                  borderColor: selectedCompound === c ? 'white' : getCompoundColor(c),
-                }}
-                title={c}
-              >
-                <span style={{ fontSize: 10 }}>{getCompoundLetter(c)}</span>
-              </button>
-            ))}
-            <span className="text-xs text-f1-muted self-center ml-1">
-              → {selectedCompound}
-            </span>
-          </div>
-        </div>
-
         {/* Pit actions */}
         <div>
           <div className="text-xs text-f1-muted mb-1.5 uppercase tracking-wider">Pit Stop</div>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-1 gap-1.5">
             <ActionBtn
               label="PIT NOW"
               icon="🔧"
               variant="red"
-              onClick={() => handlePit('pit_now')}
-              disabled={disabled}
-            />
-            <ActionBtn
-              label="STAY OUT"
-              icon="→"
-              variant="neutral"
-              onClick={() => onAction('stay_out')}
+              onClick={() => openPitDialog('pit_now')}
               disabled={disabled}
             />
           </div>
@@ -133,7 +118,7 @@ export default function ActionButtons({
               label="ATTEMPT UNDERCUT"
               icon="⬇"
               variant="orange"
-              onClick={() => handlePit('attempt_undercut')}
+              onClick={() => openPitDialog('attempt_undercut')}
               disabled={disabled || !undercutAnalysis?.undercutViable}
               badge={
                 undercutAnalysis?.undercutViable && undercutAnalysis?.undercutRisk === 'low'
@@ -145,7 +130,7 @@ export default function ActionButtons({
               label="COVER RIVAL UNDERCUT"
               icon="🛡"
               variant="blue"
-              onClick={() => handlePit('cover_undercut')}
+              onClick={() => openPitDialog('cover_undercut')}
               disabled={disabled}
             />
             <ActionBtn
@@ -226,7 +211,7 @@ export default function ActionButtons({
                   label="REACT TO SAFETY CAR"
                   icon="🚗"
                   variant="orange"
-                  onClick={() => handlePit('react_safety_car')}
+                  onClick={() => openPitDialog('react_safety_car')}
                   disabled={disabled}
                   badge="SC"
                 />
@@ -236,7 +221,7 @@ export default function ActionButtons({
                   label="REACT TO RAIN"
                   icon="🌧"
                   variant="blue"
-                  onClick={() => onAction('react_rain')}
+                  onClick={() => openPitDialog('react_rain')}
                   disabled={disabled}
                   badge="!"
                 />
@@ -246,5 +231,6 @@ export default function ActionButtons({
         )}
       </div>
     </div>
+    </>
   );
 }
