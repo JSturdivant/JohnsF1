@@ -18,6 +18,7 @@ import EventLog from '../race/EventLog';
 import WeatherPanel from '../race/WeatherPanel';
 import ActionButtons from '../race/ActionButtons';
 import DegradationPanel from '../race/DegradationPanel';
+import ReactToRainModal from '../race/ReactToRainModal';
 
 interface RaceControlProps {
   initialRaceState: RaceState;
@@ -44,6 +45,7 @@ export default function RaceControl({
   const [speedIndex, setSpeedIndex] = useState(0);
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [activeTab, setActiveTab] = useState<'strategy' | 'degradation' | 'actions'>('actions');
+  const [showRainModal, setShowRainModal] = useState(false);
 
   const autoRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const raceStateRef = useRef(raceState);
@@ -95,12 +97,31 @@ export default function RaceControl({
   }, [isAutoAdvancing, speedIndex, advanceLap]);
 
   const handleAction = (action: PlayerAction, compound?: TireCompound) => {
+    if (action === 'react_rain') {
+      setShowRainModal(true);
+      setIsAutoAdvancing(false);
+      return;
+    }
     setRaceState(prev => ({
       ...prev,
       pendingPlayerAction: action,
       pendingCompoundChange: compound ?? null,
     }));
     // Immediately stop auto-advance when player acts
+    setIsAutoAdvancing(false);
+  };
+
+  const handleRainChoice = (compound: TireCompound | null) => {
+    setShowRainModal(false);
+    if (compound === null) {
+      // Stay out — no action
+      return;
+    }
+    setRaceState(prev => ({
+      ...prev,
+      pendingPlayerAction: 'pit_now',
+      pendingCompoundChange: compound,
+    }));
     setIsAutoAdvancing(false);
   };
 
@@ -225,6 +246,16 @@ export default function RaceControl({
           </button>
         </div>
       </div>
+
+      {/* React to Rain Modal */}
+      {showRainModal && (
+        <ReactToRainModal
+          raceState={raceState}
+          weatherState={weatherState}
+          onChoice={handleRainChoice}
+          onClose={() => setShowRainModal(false)}
+        />
+      )}
 
       {/* Main race grid */}
       <div className="flex-1 p-3 grid gap-3"
