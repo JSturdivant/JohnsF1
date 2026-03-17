@@ -137,52 +137,54 @@ export default function RaceControl({
   return (
     <div className="min-h-screen bg-f1-dark flex flex-col">
       {/* Top bar */}
-      <div className="border-b border-f1-border bg-f1-panel px-4 py-2 flex items-center gap-4">
-        <div className="flex items-center gap-3">
+      <div className="border-b border-f1-border bg-f1-panel px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        {/* Title + track */}
+        <div className="flex items-center gap-2">
           <span className="text-f1-red font-black tracking-widest text-sm">F1 PIT WALL</span>
-          <span className="text-f1-border">|</span>
-          <span className="text-xs font-bold text-white">{raceState.track.name}</span>
+          <span className="text-f1-border hidden sm:inline">|</span>
+          <span className="text-xs font-bold text-white hidden sm:inline">{raceState.track.name}</span>
         </div>
 
-        <div className="flex items-center gap-2 ml-4">
+        {/* Lap counter */}
+        <div className="flex items-center gap-1.5">
           <span className="text-xs text-f1-muted">LAP</span>
-          <span className="text-xl font-black text-white tabular-nums">
+          <span className="text-lg font-black text-white tabular-nums leading-none">
             {raceState.currentLap}
           </span>
           <span className="text-xs text-f1-muted">/ {raceState.totalLaps}</span>
         </div>
 
-        {/* SC status in top bar */}
-        {scColor && (
-          <div className={`px-3 py-1 border rounded text-xs font-black ${scColor}`}>
-            {raceState.safetyCarStatus === 'sc'
-              ? '🚗 SAFETY CAR'
-              : raceState.safetyCarStatus === 'vsc'
-              ? '⚠ VSC'
-              : '🚩 RED FLAG'}
-          </div>
-        )}
-
-        {/* Player position highlight */}
-        <div className="flex items-center gap-2 ml-2">
+        {/* Player position */}
+        <div className="flex items-center gap-1.5">
           <span className="text-xs text-f1-muted">{playerState.driver.shortName}</span>
           <span
-            className="text-xl font-black tabular-nums"
+            className="text-lg font-black tabular-nums leading-none"
             style={{ color: playerState.position <= 3 ? '#FFD700' : '#fff' }}
           >
             P{playerState.position}
           </span>
         </div>
 
-        {/* Pending action indicator */}
-        {raceState.pendingPlayerAction && (
-          <div className="px-3 py-1 bg-f1-red/20 border border-f1-red/50 rounded text-xs text-f1-red font-bold">
-            Action queued: {raceState.pendingPlayerAction.replace(/_/g, ' ').toUpperCase()}
+        {/* SC status */}
+        {scColor && (
+          <div className={`px-2 py-0.5 border rounded text-xs font-black ${scColor}`}>
+            {raceState.safetyCarStatus === 'sc'
+              ? '🚗 SC'
+              : raceState.safetyCarStatus === 'vsc'
+              ? '⚠ VSC'
+              : '🚩 RED FLAG'}
           </div>
         )}
 
-        {/* Controls */}
-        <div className="ml-auto flex items-center gap-2">
+        {/* Pending action indicator */}
+        {raceState.pendingPlayerAction && (
+          <div className="px-2 py-0.5 bg-f1-red/20 border border-f1-red/50 rounded text-xs text-f1-red font-bold">
+            {raceState.pendingPlayerAction.replace(/_/g, ' ').toUpperCase()}
+          </div>
+        )}
+
+        {/* Controls — pushed to end; wraps to own row on small screens */}
+        <div className="ml-auto flex items-center gap-1.5">
           {/* Speed selector */}
           <div className="flex items-center gap-1">
             {SPEED_OPTIONS.map((opt, i) => (
@@ -205,9 +207,9 @@ export default function RaceControl({
             <button
               onClick={advanceLap}
               disabled={isAdvancing || isFinished}
-              className="px-4 py-1.5 text-xs font-bold border border-green-600 text-green-400 rounded hover:bg-green-900/30 transition-all disabled:opacity-40"
+              className="px-3 py-1 text-xs font-bold border border-green-600 text-green-400 rounded hover:bg-green-900/30 transition-all disabled:opacity-40"
             >
-              {isAdvancing ? '...' : '▶ NEXT LAP'}
+              {isAdvancing ? '...' : '▶ NEXT'}
             </button>
           )}
 
@@ -215,7 +217,7 @@ export default function RaceControl({
           <button
             onClick={() => setIsAutoAdvancing(a => !a)}
             disabled={isFinished}
-            className={`px-4 py-1.5 text-xs font-bold border rounded transition-all ${
+            className={`px-3 py-1 text-xs font-bold border rounded transition-all ${
               isAutoAdvancing
                 ? 'border-red-500 text-red-300 bg-red-900/30'
                 : 'border-f1-border text-f1-muted hover:border-green-500 hover:text-green-300'
@@ -226,23 +228,11 @@ export default function RaceControl({
         </div>
       </div>
 
-      {/* Main race grid */}
-      <div className="flex-1 p-3 grid gap-3"
-           style={{ gridTemplateColumns: '280px 1fr 260px', gridTemplateRows: 'auto 1fr auto' }}>
+      {/* Main race grid — single column on mobile, 3-column on large screens */}
+      <div className="flex-1 p-3 grid gap-3 grid-cols-1 lg:grid-cols-[280px_1fr_260px]">
 
-        {/* Left column: Timing Tower */}
-        <div className="row-span-2">
-          <TimingTower
-            drivers={raceState.drivers}
-            playerDriverId={raceState.playerDriverId}
-            lap={raceState.currentLap}
-            totalLaps={raceState.totalLaps}
-            safetyCarStatus={raceState.safetyCarStatus}
-          />
-        </div>
-
-        {/* Center top: Driver card */}
-        <div>
+        {/* Driver card — first on mobile */}
+        <div className="order-1 lg:order-2">
           <DriverCard
             playerState={playerState}
             raceState={raceState}
@@ -250,8 +240,8 @@ export default function RaceControl({
           />
         </div>
 
-        {/* Right column: tabbed panel */}
-        <div className="row-span-2 flex flex-col gap-3">
+        {/* Right column: tabbed panel — second on mobile */}
+        <div className="order-2 lg:order-3 lg:row-span-2 flex flex-col gap-3">
           <div className="flex gap-1">
             {(['actions', 'strategy', 'degradation'] as const).map(tab => (
               <button
@@ -284,8 +274,19 @@ export default function RaceControl({
           )}
         </div>
 
-        {/* Center bottom: Event log + weather */}
-        <div className="flex flex-col gap-3">
+        {/* Timing Tower — third on mobile, left column on desktop */}
+        <div className="order-3 lg:order-1 lg:row-span-2">
+          <TimingTower
+            drivers={raceState.drivers}
+            playerDriverId={raceState.playerDriverId}
+            lap={raceState.currentLap}
+            totalLaps={raceState.totalLaps}
+            safetyCarStatus={raceState.safetyCarStatus}
+          />
+        </div>
+
+        {/* Event log + weather — last on mobile, center bottom on desktop */}
+        <div className="order-4 lg:order-4 flex flex-col gap-3">
           <WeatherPanel
             weather={raceState.weather}
             weatherState={weatherState}

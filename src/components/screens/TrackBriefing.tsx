@@ -86,7 +86,7 @@ export default function TrackBriefing({
       </div>
 
       {/* Circuit Selector */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {TRACKS.map(track => (
           <button
             key={track.id}

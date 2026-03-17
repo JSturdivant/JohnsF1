@@ -51,7 +51,7 @@ export default function TimingTower({
       : null;
 
   return (
-    <div className="f1-panel flex flex-col" style={{ minWidth: 280 }}>
+    <div className="f1-panel flex flex-col w-full">
       {/* Header */}
       <div className="f1-panel-header flex items-center justify-between">
         <span>Timing Tower</span>
