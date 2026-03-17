@@ -136,8 +136,8 @@ export default function RaceControl({
 
   return (
     <div className="min-h-screen bg-f1-dark flex flex-col">
-      {/* Top bar */}
-      <div className="border-b border-f1-border bg-f1-panel px-4 py-2 flex items-center gap-4">
+      {/* Top bar — sticky floating */}
+      <div className="sticky top-0 z-50 border-b border-f1-border bg-f1-panel px-4 py-2 flex items-center gap-4">
         <div className="flex items-center gap-3">
           <span className="text-f1-red font-black tracking-widest text-sm">F1 PIT WALL</span>
           <span className="text-f1-border">|</span>
@@ -171,6 +171,20 @@ export default function RaceControl({
             style={{ color: playerState.position <= 3 ? '#FFD700' : '#fff' }}
           >
             P{playerState.position}
+          </span>
+        </div>
+
+        {/* Last lap time */}
+        <div className="flex items-center gap-1 ml-2">
+          <span className="text-xs text-f1-muted">LAST LAP</span>
+          <span className="text-sm font-black text-white tabular-nums font-mono">
+            {playerState.lapTime > 0 && playerState.lapTime < 500
+              ? (() => {
+                  const m = Math.floor(playerState.lapTime / 60);
+                  const sec = (playerState.lapTime % 60).toFixed(3);
+                  return `${m}:${sec.padStart(6, '0')}`;
+                })()
+              : '---'}
           </span>
         </div>
 
