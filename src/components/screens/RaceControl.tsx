@@ -134,76 +134,70 @@ export default function RaceControl({
       ? 'bg-red-900/60 border-red-400 text-red-200 blink-red'
       : null;
 
+  const lastLapFormatted = (() => {
+    const t = playerState.lapTime;
+    if (t <= 0 || t >= 500) return '---';
+    const m = Math.floor(t / 60);
+    const sec = (t % 60).toFixed(3);
+    return `${m}:${sec.padStart(6, '0')}`;
+  })();
+
   return (
     <div className="min-h-screen bg-f1-dark flex flex-col">
       {/* Top bar — sticky floating */}
-      <div className="sticky top-0 z-50 border-b border-f1-border bg-f1-panel px-4 py-2 flex items-center gap-4">
-        <div className="flex items-center gap-3">
-          <span className="text-f1-red font-black tracking-widest text-sm">F1 PIT WALL</span>
-          <span className="text-f1-border">|</span>
-          <span className="text-xs font-bold text-white">{raceState.track.name}</span>
+      <div className="sticky top-0 z-50 border-b border-f1-border bg-f1-panel px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+
+        {/* Branding */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-f1-red font-black tracking-widest text-xs sm:text-sm">F1 PIT WALL</span>
+          <span className="text-f1-border hidden sm:inline">|</span>
+          <span className="text-xs font-bold text-white hidden sm:inline">{raceState.track.name}</span>
         </div>
 
-        <div className="flex items-center gap-2 ml-4">
-          <span className="text-xs text-f1-muted">LAP</span>
-          <span className="text-xl font-black text-white tabular-nums">
-            {raceState.currentLap}
-          </span>
-          <span className="text-xs text-f1-muted">/ {raceState.totalLaps}</span>
+        {/* Key metrics */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-f1-muted">LAP</span>
+            <span className="text-base font-black text-white tabular-nums leading-none">{raceState.currentLap}</span>
+            <span className="text-xs text-f1-muted">/{raceState.totalLaps}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-f1-muted">{playerState.driver.shortName}</span>
+            <span
+              className="text-base font-black tabular-nums leading-none"
+              style={{ color: playerState.position <= 3 ? '#FFD700' : '#fff' }}
+            >
+              P{playerState.position}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-f1-muted">LAST</span>
+            <span className="text-xs font-black text-white tabular-nums font-mono">{lastLapFormatted}</span>
+          </div>
         </div>
 
-        {/* SC status in top bar */}
+        {/* SC status */}
         {scColor && (
-          <div className={`px-3 py-1 border rounded text-xs font-black ${scColor}`}>
-            {raceState.safetyCarStatus === 'sc'
-              ? '🚗 SAFETY CAR'
-              : raceState.safetyCarStatus === 'vsc'
-              ? '⚠ VSC'
-              : '🚩 RED FLAG'}
+          <div className={`px-2 py-0.5 border rounded text-xs font-black shrink-0 ${scColor}`}>
+            {raceState.safetyCarStatus === 'sc' ? '🚗 SC' : raceState.safetyCarStatus === 'vsc' ? '⚠ VSC' : '🚩 RED'}
           </div>
         )}
 
-        {/* Player position highlight */}
-        <div className="flex items-center gap-2 ml-2">
-          <span className="text-xs text-f1-muted">{playerState.driver.shortName}</span>
-          <span
-            className="text-xl font-black tabular-nums"
-            style={{ color: playerState.position <= 3 ? '#FFD700' : '#fff' }}
-          >
-            P{playerState.position}
-          </span>
-        </div>
-
-        {/* Last lap time */}
-        <div className="flex items-center gap-1 ml-2">
-          <span className="text-xs text-f1-muted">LAST LAP</span>
-          <span className="text-sm font-black text-white tabular-nums font-mono">
-            {playerState.lapTime > 0 && playerState.lapTime < 500
-              ? (() => {
-                  const m = Math.floor(playerState.lapTime / 60);
-                  const sec = (playerState.lapTime % 60).toFixed(3);
-                  return `${m}:${sec.padStart(6, '0')}`;
-                })()
-              : '---'}
-          </span>
-        </div>
-
-        {/* Pending action indicator */}
+        {/* Pending action */}
         {raceState.pendingPlayerAction && (
-          <div className="px-3 py-1 bg-f1-red/20 border border-f1-red/50 rounded text-xs text-f1-red font-bold">
-            Action queued: {raceState.pendingPlayerAction.replace(/_/g, ' ').toUpperCase()}
+          <div className="px-2 py-0.5 bg-f1-red/20 border border-f1-red/50 rounded text-xs text-f1-red font-bold hidden sm:block shrink-0">
+            {raceState.pendingPlayerAction.replace(/_/g, ' ').toUpperCase()}
           </div>
         )}
 
         {/* Controls */}
-        <div className="ml-auto flex items-center gap-2">
-          {/* Speed selector */}
-          <div className="flex items-center gap-1">
+        <div className="ml-auto flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-0.5">
             {SPEED_OPTIONS.map((opt, i) => (
               <button
                 key={i}
                 onClick={() => setSpeedIndex(i)}
-                className={`px-2 py-0.5 text-xs rounded border transition-all ${
+                className={`px-1.5 py-0.5 text-xs rounded border transition-all ${
                   speedIndex === i
                     ? 'border-f1-red bg-f1-red/20 text-f1-red'
                     : 'border-f1-border text-f1-muted hover:border-f1-muted'
@@ -214,38 +208,37 @@ export default function RaceControl({
             ))}
           </div>
 
-          {/* Manual advance */}
           {!isAutoAdvancing && (
             <button
               onClick={advanceLap}
               disabled={isAdvancing || isFinished}
-              className="px-4 py-1.5 text-xs font-bold border border-green-600 text-green-400 rounded hover:bg-green-900/30 transition-all disabled:opacity-40"
+              className="px-2 sm:px-3 py-1 text-xs font-bold border border-green-600 text-green-400 rounded hover:bg-green-900/30 transition-all disabled:opacity-40"
             >
-              {isAdvancing ? '...' : '▶ NEXT LAP'}
+              {isAdvancing ? '...' : <><span>▶</span><span className="hidden sm:inline"> NEXT</span></>}
             </button>
           )}
 
-          {/* Auto advance toggle */}
           <button
             onClick={() => setIsAutoAdvancing(a => !a)}
             disabled={isFinished}
-            className={`px-4 py-1.5 text-xs font-bold border rounded transition-all ${
+            className={`px-2 sm:px-3 py-1 text-xs font-bold border rounded transition-all ${
               isAutoAdvancing
                 ? 'border-red-500 text-red-300 bg-red-900/30'
                 : 'border-f1-border text-f1-muted hover:border-green-500 hover:text-green-300'
             }`}
           >
-            {isAutoAdvancing ? '⏸ PAUSE' : '⏩ AUTO'}
+            {isAutoAdvancing ? '⏸' : '⏩'}
+            <span className="hidden sm:inline">{isAutoAdvancing ? ' PAUSE' : ' AUTO'}</span>
           </button>
         </div>
       </div>
 
-      {/* Main race grid */}
-      <div className="flex-1 p-3 grid gap-3"
-           style={{ gridTemplateColumns: '280px 1fr 260px', gridTemplateRows: 'auto 1fr auto' }}>
-
-        {/* Left column: Timing Tower */}
-        <div className="row-span-2">
+      {/* Main race grid — single column on mobile, 3-column on lg+ */}
+      <div
+        className="flex-1 p-2 sm:p-3 grid grid-cols-1 gap-3 lg:grid-cols-[280px_minmax(0,1fr)_260px]"
+      >
+        {/* Timing Tower — last on mobile, left col rows 1-2 on desktop */}
+        <div className="order-4 lg:order-none lg:row-span-2">
           <TimingTower
             drivers={raceState.drivers}
             playerDriverId={raceState.playerDriverId}
@@ -255,8 +248,8 @@ export default function RaceControl({
           />
         </div>
 
-        {/* Center top: Driver card */}
-        <div>
+        {/* Driver card — second on mobile, center-top on desktop */}
+        <div className="order-2 lg:order-none">
           <DriverCard
             playerState={playerState}
             raceState={raceState}
@@ -264,8 +257,8 @@ export default function RaceControl({
           />
         </div>
 
-        {/* Right column: tabbed panel */}
-        <div className="row-span-2 flex flex-col gap-3">
+        {/* Tabbed panel — first on mobile, right col rows 1-2 on desktop */}
+        <div className="order-1 lg:order-none lg:row-span-2 flex flex-col gap-3">
           <div className="flex gap-1">
             {(['actions', 'strategy', 'degradation'] as const).map(tab => (
               <button
@@ -298,8 +291,8 @@ export default function RaceControl({
           )}
         </div>
 
-        {/* Center bottom: Event log + weather */}
-        <div className="flex flex-col gap-3">
+        {/* Weather + Event log — third on mobile, center-bottom on desktop */}
+        <div className="order-3 lg:order-none flex flex-col gap-3">
           <WeatherPanel
             weather={raceState.weather}
             weatherState={weatherState}
