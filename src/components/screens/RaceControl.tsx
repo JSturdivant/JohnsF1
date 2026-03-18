@@ -143,9 +143,9 @@ export default function RaceControl({
   })();
 
   return (
-    <div className="min-h-screen bg-f1-dark flex flex-col">
-      {/* Top bar — sticky floating */}
-      <div className="sticky top-0 z-50 border-b border-f1-border bg-f1-panel px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+    <div className="h-screen bg-f1-dark flex flex-col overflow-hidden">
+      {/* Top bar — always visible, outside the scroll container */}
+      <div className="shrink-0 border-b border-f1-border bg-f1-panel px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 z-50">
 
         {/* Branding */}
         <div className="flex items-center gap-2 shrink-0">
@@ -233,9 +233,9 @@ export default function RaceControl({
         </div>
       </div>
 
-      {/* Main race grid — single column on mobile, 3-column on lg+ */}
+      {/* Main race grid — scrollable, single column on mobile, 3-column on lg+ */}
       <div
-        className="flex-1 p-2 sm:p-3 grid grid-cols-1 gap-3 lg:grid-cols-[280px_minmax(0,1fr)_260px]"
+        className="flex-1 overflow-y-auto p-2 sm:p-3 grid grid-cols-1 gap-3 lg:grid-cols-[280px_minmax(0,1fr)_260px]"
       >
         {/* Timing Tower — last on mobile, left col rows 1-2 on desktop */}
         <div className="order-4 lg:order-none lg:row-span-2">
