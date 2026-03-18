@@ -79,7 +79,7 @@ export default function TimingTower({
            style={{ gridTemplateColumns: '24px 40px 1fr 60px 50px 28px' }}>
         <span>POS</span>
         <span>DRV</span>
-        <span>GAP</span>
+        <span>GAP / INT</span>
         <span className="text-right">LAST LAP</span>
         <span className="text-right">TIRE</span>
         <span className="text-center">S</span>
@@ -137,8 +137,8 @@ export default function TimingTower({
                   {formatGap(ds.gapToLeader, ds.position)}
                 </span>
                 {ds.position > 1 && (
-                  <span className="text-f1-border text-xs">
-                    +{formatInterval(ds.gapToAhead)}
+                  <span className="text-cyan-400 text-xs">
+                    △{formatInterval(ds.gapToAhead)}
                   </span>
                 )}
               </div>

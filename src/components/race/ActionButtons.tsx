@@ -107,7 +107,7 @@ export default function ActionButtons({
           <div className="text-xs text-f1-muted mb-1.5 uppercase tracking-wider">Pit Stop</div>
           <div className="grid grid-cols-2 gap-1.5">
             <ActionBtn
-              label="PIT NOW"
+              label="BOX, BOX"
               icon="🔧"
               variant="red"
               onClick={() => handlePit('pit_now')}
